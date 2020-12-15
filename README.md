@@ -43,3 +43,9 @@ PropertyName en la cabecera.
 
 <th data-header="country">Country</th>
 ```
+
+Agregar el atributo  data-container al DIV padre, por defecto es Body
+
+```
+ data-container="true"
+```
