@@ -1,0 +1,57 @@
+class FilterDataTable{
+    _dataTable = ""; 
+    constructor(dataTable){
+		this._dataTable = dataTable;
+		this._addFilterHeader();
+		
+	}
+	_getHeader(){
+		return this._dataTable.columns().header();
+	}
+	_containsInput(element){
+		return $(element).find("input").length <= 0;
+	}
+	_addFilterHeader(){
+		var heads = this._getHeader();
+		var instance = this;
+		var createFilterSpan = function(index){
+			var span = document.createElement("span");
+			span.className = "fas fa-filter";
+			span.setAttribute("data-index", index);
+			span.style.cursor = "pointer";
+			span.style.float = "right";
+			span.onclick = instance._addToolTip;
+			return span;
+		}
+		
+		$.each(heads, function(index, item){
+			if(instance._containsInput(item))
+				$(item).append(createFilterSpan(index));
+		})
+		return this._getHeader();
+	};
+
+	_addToolTip(){
+		var elemento = this;
+		var div = document.createElement("DIV");
+		div.style.maxHeight = "300px";
+		div.style.overflow = "auto";
+		div.style.position = "relative";
+		div.style.width = "300px";
+		div.style.zIndex= 9999;
+		div.style.backgroundColor = "black";
+		var container = $("div[data-container=true]") || $("body");
+		container.append(div);
+		div.style.top = `${($(elemento).offset().top - $(div).offset().top) + elemento.offsetHeight}px`;
+		div.style.left = `${$(elemento).offset().left}px`;
+		div.innerHTML = "HOLA MUNDO";
+		console.log(div);
+		// var createFilterSpan = function(){
+		// 	var span = document.createElement("div");
+		// 	span.className = "fas fa-filter";
+		// 	span.setAttribute("data-index", index);
+		// 	span.style.cursor = "pointer";
+		// 	return span;
+		// }
+	}
+};
