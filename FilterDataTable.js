@@ -1,6 +1,7 @@
 class FilterDataTable{
 	constructor(dataTable, props){
 		this._props = props || {};
+		this._props.formatFilter = this._props.formatFilter || {};
 		this.mouseInParent = false;
 		this._dataTable = dataTable; 
 		this._labelFilterBy = "Filtro: ";
@@ -52,11 +53,18 @@ class FilterDataTable{
 		var heads = this._getHeader();
 		var instance = this;
 		
-		var createFilterSpan = function(property){
+		var createFilterSpan = function(property, index){
 			var span = document.createElement("span");
 			span.className = "fas fa-filter";
 			span.style.cursor = "pointer";
 			span.style.float = "right";
+			var formatFilter = instance._props.formatFilter.firstOrDefault(x=>x.headerIndex == index);
+			if(formatFilter !== null){
+				span.setAttribute("data-type", instance._getTypeFilter(formatFilter.type));
+			}
+			else{
+				span.setAttribute("data-type", instance._getTypeFilter("text"));
+			}
 			span.onmouseover = function(){ instance._onMouseOverDiv();};
 			span.onmouseout = function(){ instance._onMouseOutDiv();};
 			span.onclick = function(){ instance._addToolTip(span, property); };
@@ -66,8 +74,8 @@ class FilterDataTable{
 		$.each(heads, function(index, item){
 			if(instance._containsInput(item)){
 				item.style.width = "500px"
-				var property = item.getAttribute("data-header") || index;
-				$(item).append(createFilterSpan(property));
+				var property = item.getAttribute("data-header") || index.toString();
+				$(item).append(createFilterSpan(property, index));
 			}
 		});
 		return this._getHeader();
@@ -91,8 +99,9 @@ class FilterDataTable{
 		div.style.top = `${($(elemento).offset().top - $(div).offset().top) + elemento.offsetHeight}px`;
 		div.style.left = `${$(elemento).offset().left - 90}px`;
 		
+		var type = elemento.getAttribute("data-type");
 		$(div).append(this._createSelectWithOptions());
-		$(div).append(this._createText());
+		$(div).append(this._createText(type));
 		$(div).append(this._createButton());
 		this._setValues(property);
 		event.stopPropagation();
@@ -147,7 +156,7 @@ class FilterDataTable{
 
 		return div;
 	}
-	_createText(){
+	_createText(type){
 		var instance = this;
 		var div = document.createElement("DIV");
 		div.className = "col-md-12";
@@ -160,10 +169,15 @@ class FilterDataTable{
 		div2.onmouseout = function(){ instance._onMouseOutDiv();};
 
 		var input = document.createElement("INPUT");
-		input.setAttribute("type", "TEXT");
+		input.setAttribute("type", type);
 		input.className = "form-control";
 		input.name= "value";
-		input.onkeyup =  function(){ instance._onKeyUpSelect(this);};
+		if(type==="date"){
+			input.onkeyup =  function(){ return false;};
+			input.onchange =  function(){ instance._onKeyUpSelect(this);};
+		}else{
+			input.onkeyup =  function(){ instance._onKeyUpSelect(this);};
+		}
 		input.onmouseover = function(){ instance._onMouseOverDiv();};
 		input.onmouseout = function(){ instance._onMouseOutDiv();};
 		input.setAttribute("placeholder", this.getlabelSearchBy());
@@ -256,4 +270,11 @@ class FilterDataTable{
 	getFilter(){
 		return this._filter;
 	};
+	_getTypeFilter(type){
+		switch(type.toLowerCase()){
+			case 'date': return 'date';
+			case 'text': return 'text';
+			default: throw Error("No existe el tipo "+ type + "en los filtros");
+		}
+	}
 };
